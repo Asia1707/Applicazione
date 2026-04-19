@@ -1,70 +1,108 @@
-//PROVA
+/* 
+import 'package:flutter/material.dart';
 
-Scaffold(
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       drawer: Drawer(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center,
-                children:[ Card(elevation: 10, child:Text('da decidere'),),]
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Card(
+              elevation: 10,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('da decidere'),
+              ),
+            ),
+          ],
         ),
       ),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 107, 83, 138), // altrimetni light green 
-        actions:[Icon(Icons.account_circle_sharp),],
-        title: Text('Astemix & Drugbelix'),
+        backgroundColor: const Color.fromARGB(255, 107, 83, 138),
+        actions: const [Icon(Icons.account_circle_sharp), SizedBox(width: 16)],
+        title: const Text('Astemix & Drugbelix'),
         centerTitle: true,
       ),
       body: Container(
-        
         color: const Color.fromARGB(255, 255, 240, 207),
-        // Figlio del container 
-        child:
-        // Organizzo una colonna portante dentro il container
-        Column( mainAxisAlignment: MainAxisAlignment.center,
-          // All'interno della colonna posso gestire più figli 
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-              
-              // Organizziamo per righe 
-              // Prima riga - Testo benvenuto
-              Row(mainAxisAlignment: MainAxisAlignment.center, // mi pongo al centro della riga 
-                 crossAxisAlignment: CrossAxisAlignment.start, // Dovrebbe mettemrinin alto nella colonna portante
-
-                children: [ // Elementi dentro la righa 
-                  Container(
-                    alignment: Alignment(1, 1), // per centrare oggetti all'interno del container 
-                    constraints: BoxConstraints(maxWidth: 300,maxHeight: 300), // fissa dimensioni del container 
-                    color : Colors.black , 
-                    padding: EdgeInsets.all(10.0),
-                    child: Text('WELECOME!',style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold ,color:Colors.amber),),
-                            ) 
-                          ] // Children prima row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  alignment: const Alignment(0, 0),
+                  constraints: const BoxConstraints(
+                    maxWidth: 300,
+                    maxHeight: 80,
                   ),
+                  color: Colors.black,
+                  padding: const EdgeInsets.all(10.0),
+                  child: const Text(
+                    'WELCOME!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
-              // Seconda riga- card user Name 
-              Row( mainAxisAlignment: MainAxisAlignment.center,
-                children:[
-                    SizedBox( height:50, width:300,
-                       child: Card(elevation: 3, shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          child: Column( mainAxisAlignment: MainAxisAlignment.center,
-                                children: [Text('Inserire username') ] ),
-                                    ),),
-                  ], ),
-              // Terza riga- card user ID
-              Row( mainAxisAlignment: MainAxisAlignment.center,
-                children:[
-                    SizedBox( height:50, width:300,
-                       child: Card(elevation: 3, shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          child: Column( mainAxisAlignment: MainAxisAlignment.center,
-                                children: [Text('Inserire codice ID ') ] ),
-                                    ),),
-                  ], ),
+            const SizedBox(height: 30),
 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 60,
+                  width: 300,
+                  child: Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Inserire username')],
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
-                ],// Children della colonna protante 
+            const SizedBox(height: 15),
 
-              )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 60,
+                  width: 300,
+                  child: Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Inserire codice ID')],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-
-        
-  
+      ),
     );
-
+  }
+}
+ */
