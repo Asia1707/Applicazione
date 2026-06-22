@@ -1,200 +1,239 @@
-import 'package:flutter/material.dart'; 
- 
- 
-class Login extends StatefulWidget { //Stateful: cambia il stato della password visibility
-  Login({super.key});
+import 'package:flutter/material.dart'; // contiene i widget 
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:astemix_drugbalix/services/impact.dart';
+import 'package:astemix_drugbalix/screens/homepage.dart'; 
+
+class Login extends StatefulWidget { //stateful perchè fa il refresh in base all'azione dell'utente (toggle specialista, occhiolino)
+  const Login({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Login> createState() => _LoginState(); 
 }
 
-class _LoginState extends State<Login> {
-  // i CONTROLLERS tengono traccia di quello che l'utente scrive nei campi di testo. Uno per username, uno per password.
+class _LoginState extends State<Login> { 
   
-  final TextEditingController userController = TextEditingController();     // legge il campo username
-  final TextEditingController passwordController = TextEditingController(); // legge il campo password
+  // I controller servono a leggere il testo digitato dall'utente. Uno per ogni campo
+  final TextEditingController userController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController specialistController = TextEditingController();
   
-  // Stato per tracciare se la password è visibile o nascosta
-  bool _isPasswordVisible = false;
- 
+  final Impact impact = Impact(); //collego impact per i token
+
+  // Inizializzo le variabili di stato 
+  bool _isPasswordVisible = false; // di default non visibile
+  bool _showSpecialistField = false; // di default non visibile
+
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
-      body: SafeArea( //SafeArea evita che il contenuto finisca sotto la barra di stato del telefono
-        child: Padding(
- 
-          // SPAZIATURA ESTERNA della pagina
-          // QUI PER CAMBIARE I MARGINI DELLA PAGINA
-          padding: const EdgeInsets.only(
-            left: 24.0,
-            right: 24.0,
-            top: 50,
-            bottom: 20,
-          ),
-          child: SingleChildScrollView( // Permette di scrollare se il contenuto è troppo grande
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center, // centra tutto al centro
-              children: [
- 
-
-              // 1. Creare una cartella "assets"
-              // 2. Aggiungere in pubspec.yaml:
-              //      flutter:
-              //        assets:
-              //          - assets/logo.png
-              // QUI PER CAMBIARE IL LOGO 
-
-              Image.asset(
-                'assets/logo.png',
-                scale: 2, // più è alto più è piccola l'immagine
-              ),
- 
-              const SizedBox(height: 50), // spazio verticale vuoto
- 
-              
-              
-              // QUI PER CAMBIARE IL TESTO DI BENVENUTO
-  
-              const Text(
-                'Benvenuto',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500, // grassetto medio
-                  fontSize: 30,               // QUI PER CAMBIARE DIMENSIONE TITOLO
+    return Scaffold( 
+      backgroundColor: Colors.white, //QUI PER CAMBIARE LO SFONDO
+      body: SafeArea(  //garantisco che non si sovrapponga a notch, fotocamere o bordi curvi del telefono
+        child: Padding( //spazi vuoti ai lati degli elementi
+          padding: const EdgeInsets.symmetric(horizontal: 24.0), 
+          child: SingleChildScrollView( //permette di scorrere in verticale. Utile quando compare la tastiera
+            child: Column( //dispongo i widget in colonna
+              crossAxisAlignment: CrossAxisAlignment.stretch, //allineo su tutta la larghezza
+              children: [ 
+                const SizedBox(height: 60), //QUI PER CAMBIARE SPAZIO VUOTO SOPRA AL LOGO
+                
+                // LOGO
+                Align(
+                  alignment: Alignment.center, 
+                  child: Image.asset( 
+                    'assets/logo.png', //CARICA IN PUBSPEC 
+                    height: 120, //QUI PER CAMBIARE DIMENSIONE LOGO
+                  ), 
                 ),
-              ),
- 
-              const SizedBox(height: 20), 
- 
+                
+                const SizedBox(height: 40), //QUI PER CAMBIARE SPAZIO VUOTO TRA LOGO E USERNAME
 
-              // QUI PER CAMBIARE IL SOTTOTITOLO
-              const Text('Accedi al tuo account'),
- 
-              const SizedBox(height: 40), 
- 
-   
-              // CAMPO USERNAME
-              // TextField = casella di testo interattiva
-
-              TextField(
-                controller: userController, // collega il controller per leggere il testo
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // QUI PER CAMBIARE L'ARROTONDAMENTO DEL BORDO
-                  ),
-                  labelText: 'Username',                    // QUI PER CAMBIARE L'ETICHETTA
-                  hintText: 'Inserisci il tuo username',   // QUI PER CAMBIARE IL SUGGERIMENTO
-                  suffixIcon: const Icon(Icons.person),    // Icona omino sul lato destro
-                ),
-              ),
- 
-              const SizedBox(height: 30), 
- 
-  
-              // CAMPO PASSWORD
-              // obscureText: true → nasconde i caratteri (puntini)
-
-     
-              TextField(
-                controller: passwordController,
-                obscureText: !_isPasswordVisible, // inverte lo stato: true nasconde, false mostra
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // QUI PER CAMBIARE L'ARROTONDAMENTO
-                  ),
-                  labelText: 'Password',                    // QUI PER CAMBIARE L'ETICHETTA
-                  hintText: 'Inserisci la tua password',   // QUI PER CAMBIARE IL SUGGERIMENTO
-                  // Icona occhio che toggia la visibilità della password
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility  // Occhio aperto se visibile
-                          : Icons.visibility_off, // Occhio chiuso se nascosto
+                // USERNAME
+                TextField(
+                  controller: userController, // collego al controllore
+                  decoration: InputDecoration( //visiva del campo di testo
+                    filled: true, // Abilita il riempimento con un colore (secchiello)
+                    fillColor: Colors.grey.shade50, // grigio chiaro
+                    hintText: 'Username', // sparisce quando si inizia a scrivere
+                    hintStyle: TextStyle(color: Colors.grey.shade500), // Stile del testo, grigio più chiaro
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20), //spazio tra testo e bordo
+                    border: OutlineInputBorder( //bordo quando non selezionato
+                      borderRadius: BorderRadius.circular(12), // Angoli arrotondati
+                      borderSide: BorderSide.none, // Nessuna linea di bordo visibile
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible; // Toggle visibilità
-                      });
-                    },
+
+                    enabledBorder: OutlineInputBorder( //bordo quando selezionato ma non cliccato (già riempito)
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1), // Bordo grigio sottile
+                    ),
+
+                    focusedBorder: OutlineInputBorder(  //bordo cliccato
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF384242), width: 2), // pià spesso e scuro
+                    ),
                   ),
                 ),
-              ),
- 
-              const SizedBox(height: 30), 
- 
-   
-              // BOTTONE LOGIN
-              // Align + Center per centrarlo orizzontalmente
-    
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: ElevatedButton(
- 
-     
-                    // LOGICA AL CLICK DEL BOTTONE
-                    // Controlla username e password inseriti
 
-                    onPressed: () {
-                      // Legge il testo scritto nei due campi
-                      // e lo confronta con username/password corretti
- 
-                      // QUI PER CAMBIARE USERNAME E PASSWORD DI ACCESSO ↓
-                      if (userController.text == 'admin' &&
-                          passwordController.text == '123456') {
- 
-                        // Credenziali corrette → per ora stampa solo un messaggio
-                        // In futuro qui metterai la navigazione alla schermata successiva:
-                        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AltraSchermata()));
-                        print('Login effettuato con successo');
- 
-                      } else {
- 
-                        // Credenziali errate → mostra un messaggio di errore rosso
-                        // QUI PER CAMBIARE IL MESSAGGIO DI ERRORE
-                        ScaffoldMessenger.of(context)
-                          ..removeCurrentSnackBar()
-                          ..showSnackBar(
-                            const SnackBar(
-                              backgroundColor: Colors.red, // QUI PER CAMBIARE COLORE ERRORE
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(8),
-                              duration: Duration(seconds: 2),
-                              content: Text('Username o password errati'),
-                            ),
-                          );
-                      }
-                    },
- 
-                    // ----------------------------------------
-                    // STILE DEL BOTTONE
-                    // QUI PER CAMBIARE COLORE, DIMENSIONI E TESTO DEL BOTTONE
-                    // ----------------------------------------
-                    style: ButtonStyle(
-                      padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-                        const EdgeInsets.symmetric(
-                          horizontal: 80, // QUI PER CAMBIARE LARGHEZZA BOTTONE
-                          vertical: 12,   // QUI PER CAMBIARE ALTEZZA BOTTONE
+                const SizedBox(height: 20), // QUI PER AGGIUNGERE SPAZIO TRA USERNAME E PASSWORD
+
+                // CAMPO PASSWORD
+                TextField(
+                  controller: passwordController, //Controllore
+                  obscureText: !_isPasswordVisible, //nascondo o mostro in base al valore True/False
+                  decoration: InputDecoration( //estetica come sopra
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    hintText: 'Password',
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF384242), width: 2),
+                    ),
+
+                    suffixIcon: IconButton( //aggiungo un icona a destra
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off, //cambio l'icona in base al booleano
+                        color: Colors.grey.shade600, 
+                      ),
+                      onPressed: () { //se premuta
+                        setState(() { //refresh dell'interfaccia
+                          _isPasswordVisible = !_isPasswordVisible; //inverto il booleano
+                        });
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30), // QUI PER AGGIUNGERE SPAZIO TRA PASSWORD E PSICO
+
+                Row( //Creo una riga per testo e switch
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, //spazio tra testo e switch
+                  children: [
+                    Expanded( //il testo occupa tutto lo spazio, spingendo lo switch a destra
+                      child: Text(
+                        "Sei un paziente seguito?\nInserisci il codice dello specialista",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500, //Spessore del testo medio-grassetto
+                          color: Colors.grey.shade700,
+                          height: 1.4, //QUI PER MODIFICARE L'INTERLINEA
                         ),
                       ),
-                      foregroundColor: WidgetStateProperty.all<Color>(
-                        Colors.white, // QUI PER CAMBIARE COLORE TESTO BOTTONE
-                      ),
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                        const Color(0xFF384242), // QUI PER CAMBIARE COLORE SFONDO BOTTONE
+                    ),
 
+                    Switch(
+                      value: _showSpecialistField, //Il valore attuale dello switch
+                      activeThumbColor: const Color(0xFF0F8A8F), // Colore quando lo switch è acceso (RAL 5018)
+                      // Funzione richiamata ogni volta che l'utente interagisce con lo Switch
+                      onChanged: (bool value) { //se cambiato
+                        setState(() { //refresh della pagina
+                          _showSpecialistField = value; //aggiorno con il nuovo valore
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                // CAMPO CODICE PSICOLOGO
+                if (_showSpecialistField) ...[ //Se il toggle è acceso, mostra questo campo (operatore spread "..." per inserire widget condizionalmente)
+                  const SizedBox(height: 15), // QUI PER AGGIUNGERE SPAZIO TRA IL TOGGLE E IL CAMPO SPECIALISTA
+                  TextField(
+                    controller: specialistController, //collego il controller
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      hintText: 'Codice specialista (opzionale)',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1), 
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF384242), width: 2), 
+                      ),
+                      // Icona tematica fissa sulla destra del campo
+                      suffixIcon: Icon(
+                        Icons.medical_services,
+                        color: Colors.grey.shade600, 
                       ),
                     ),
- 
-                    child: const Text('Accedi'), // QUI PER CAMBIARE IL TESTO DEL BOTTONE
+                  ),
+                ],
+
+                const SizedBox(height: 40), // QUI PER AGGIUNGERE SPAZIO TRA IL CAMPO SPECIALISTA E IL BOTTONE ACCEDI
+
+                // BOTTONE: ACCEDI
+                ElevatedButton( 
+                  onPressed: () async { //async perché contiene operazioni che richiedono tempo. Deve richiedere i token
+                    final result = await impact.getAndStoreTokens(
+                        userController.text, passwordController.text);
+                    
+                    if (result == 200) { //se la chiamata ha successo esce HTTP 200
+                      final sp = await SharedPreferences.getInstance(); //salva username e password in locale
+                      
+                      await sp.setString('username', userController.text); //salvo username
+                      await sp.setString('password', passwordController.text); //salvo password
+                      
+                      if (_showSpecialistField && specialistController.text.isNotEmpty) { //se il toggle è acceso
+                        await sp.setString('specialist_code', specialistController.text); //salvo il codice dello specialista
+                      }
+
+
+                      // Naviga verso la Homepage. pushReplacement "distrugge" la pagina di login, 
+                      // in modo che se l'utente preme il tasto "indietro" non torni qui ma esca dall'app
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Home(), 
+                        ),
+                      );
+                    } else { // se credenziali errate o altri errori
+                      
+                      // Mostra un popup temporaneo (SnackBar) nella parte inferiore dello schermo
+                      ScaffoldMessenger.of(context) //snackbar
+                        ..removeCurrentSnackBar() // tolgo eventuale snackbar precedente
+                        ..showSnackBar(const SnackBar(
+                            backgroundColor: Colors.red, // Colore di sfondo 
+                            behavior: SnackBarBehavior.floating, // "fluttuante" sullo schermo
+                            margin: EdgeInsets.all(8), // Distanza dai bordi
+                            duration: Duration(seconds: 2), // Il messaggio scompare dopo 2 secondi
+                            content: Text("Username o password errati") // Il testo dell'errore
+                        ));
+                    }
+                  },
+                  
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F8A8F), // Colore di sfondo (RAL 5018)
+                    foregroundColor: Colors.white, // Colore del testo
+                    padding: const EdgeInsets.symmetric(vertical: 16), // Altezza interna del bottone
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Angoli arrotondati
+                    ),
+                    elevation: 0, // Rimuove l'ombra sotto il bottone
+                  ),
+                  child: const Text(
+                    'Accedi', // Testo del bottone
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                   ),
                 ),
-              ),
- 
-              const SizedBox(height: 20),
- 
-            ],
+
+                const SizedBox(height: 50), //spazio in fondo alla pagina
+              ], 
             ),
           ),
         ),
