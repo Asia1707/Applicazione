@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
+// importo le schermate per la bottom navigation bar
+import 'statisticsscreen.dart';
+import 'moodscreen.dart';
+import 'settingsscreen.dart';
+
 class Home extends StatefulWidget {
   static const route = '/home/';
   static const routeDisplayName = 'HomePage';
@@ -18,6 +23,8 @@ class _HomeState extends State<Home> {
   bool? haBevuto;
   String umore = '';
   String nomeUtente = '';
+
+  int _indiceSelezionato = 0; // indice della BottomNavigationBar
 
   static const int obiettivoGiorni = 30;
 
@@ -58,6 +65,12 @@ class _HomeState extends State<Home> {
 
   double get percentuale => min(streak / obiettivoGiorni, 1.0);
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _indiceSelezionato = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +85,11 @@ class _HomeState extends State<Home> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
+
+      body: IndexedStack(
+        index: _indiceSelezionato,
+        children: [
+          SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,8 +298,15 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
+
+          const StatisticsScreen(), // Schermata statistiche
+          const MoodScreen(),       // Schermata mood
+          const SettingsScreen(),   // Schermata impostazioni
+        ],
+      ), 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: _indiceSelezionato,
+        onTap: _onItemTapped,
         selectedItemColor: const Color(0xFF0D9488),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
