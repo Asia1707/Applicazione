@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // contiene il widget 
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
