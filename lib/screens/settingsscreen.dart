@@ -26,7 +26,7 @@ class _SettingsScreenState extends State <SettingsScreen> {
           ),
           const SizedBox (height:12), 
           _buildInfoRow('Nome utente', 'Marco Rossi'), 
-          const Divider()
+          const Divider(),
           _buildInfoRow('Codice Psicologo', 'PSI12345'),
         ],
       ),
@@ -47,7 +47,7 @@ class _SettingsScreenState extends State <SettingsScreen> {
             style: const TextStyle(fontSize: 18, color: Colors.black45),
           ),
           const SizedBox(width: 8),
-          Icon(MdiIcons.pencilOutline, size: 18, color: Color.black45),
+          Icon(MdiIcons.pencilOutline, size: 18, color: Colors.black45),
           ],
         ),
       ],
