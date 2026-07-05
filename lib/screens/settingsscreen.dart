@@ -1,12 +1,77 @@
-import 'package:flutter/material.dart'; // contiene il widget 
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter/material.dart'; 
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 @override 
 State <SettingsScreen> createState() => _SettingsScreenState();
 }
 class _SettingsScreenState extends State <SettingsScreen> {
-  Widget _buildProfileCard() {
+  bool _shareDataWithPsychologist = true;
+  void _editUserName(UserProvider userProvider){
+    final controller = TextEditingController(text: userProvider.userName);
+
+    showDialog(
+      context: context, 
+      builder: (context) {
+        return AlertDialog(
+          title : const Text('Modifica nome utente'), 
+          content: TextField(
+            controller : controller,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed:(){
+                Navigator.pop(context);
+              },
+              child: const Text ('Annulla'),
+            ),
+            TextButton(
+              onPressed: () {
+                userProvider.updateUserName(controller.text);
+                Navigator.pop(context);
+              },
+              child: const Text ('Salva'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _editPsychologistCode(UserProvider userProvider){
+    final controller = TextEditingController(text: userProvider.psychologistCode);
+
+    showDialog(
+      context: context, 
+      builder: (context) {
+        return AlertDialog(
+          title : const Text('Modifica codice psicologo'), 
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed:(){
+                Navigator.pop(context);
+              },
+              child: const Text ('Annulla'),
+            ),
+            TextButton(
+              onPressed: () {
+                userProvider.updatePsychologistCode(controller.text);
+                Navigator.pop(context);
+              },
+              child: const Text ('Salva'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Widget _buildProfileCard(UserProvider userProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -26,7 +91,7 @@ class _SettingsScreenState extends State <SettingsScreen> {
           ),
           const SizedBox (height:12), 
           _buildInfoRow('Nome utente', 'Marco Rossi'), 
-          const Divider(),
+          const Divider()
           _buildInfoRow('Codice Psicologo', 'PSI12345'),
         ],
       ),
@@ -47,14 +112,19 @@ class _SettingsScreenState extends State <SettingsScreen> {
             style: const TextStyle(fontSize: 18, color: Colors.black45),
           ),
           const SizedBox(width: 8),
-          Icon(MdiIcons.pencilOutline, size: 18, color: Colors.black45),
+          Icon(MdiIcons.pencilOutline, size: 18, color: Color.black45),
           ],
         ),
       ],
     );
   }
+
+  
+
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider> ();
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF9),
       appBar: AppBar(
@@ -72,7 +142,9 @@ class _SettingsScreenState extends State <SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16), 
         children: [
-          _buildProfileCard(),
+          _buildProfileCard(userProvider),
+          const SizedBox(height:16),
+          _buildShareDataCard(),
 
         ],
       ),
