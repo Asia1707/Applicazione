@@ -132,6 +132,108 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildProgressCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'I tuoi progressi',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.check_circle_outline, size: 20, color: Colors.green),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Check-in completati',
+                    style: TextStyle(fontSize: 15, color: Colors.black87),
+                  ),
+                ],
+              ),
+              const Text(
+                '15',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
+              ),
+            ],
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.local_fire_department_outlined, size: 20, color: Colors.orange),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Streak migliore',
+                    style: TextStyle(fontSize: 15, color: Colors.black87),
+                  ),
+                ],
+              ),
+              const Text(
+                '12 giorni',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Obiettivo',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.track_changes, size: 20, color: Colors.teal),
+              const SizedBox(width: 8),
+              const Text(
+                'Target personale',
+                style: TextStyle(fontSize: 15, color: Colors.black87),
+              ),
+              const Spacer(),
+              const Text(
+                '30 giorni senza alcol',
+                style: TextStyle(fontSize: 15, color: Colors.black54),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildShareDataCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -180,6 +282,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           _buildProfileCard(userProvider),
+          const SizedBox(height: 16),
+          _buildProgressCard(),
+          const SizedBox(height: 16),
+          _buildTargetCard(),
           const SizedBox(height: 16),
           _buildShareDataCard(),
         ],
