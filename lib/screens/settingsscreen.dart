@@ -44,38 +44,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _editPsychologistCode(UserProvider userProvider) {
-    final controller = TextEditingController(text: userProvider.psychologistCode);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Modifica codice psicologo'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Annulla'),
-            ),
-            TextButton(
-              onPressed: () {
-                userProvider.updatePsychologistCode(controller.text);
-                Navigator.pop(context);
-              },
-              child: const Text('Salva'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildInfoRow(String label, String value, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -120,13 +88,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 12),
+
+          // Nome utente: modificabile con dialogo
           _buildInfoRow('Nome utente', userProvider.userName, () {
             _editUserName(userProvider);
           }),
+
           const Divider(),
-          _buildInfoRow('Codice Psicologo', userProvider.psychologistCode, () {
-            _editPsychologistCode(userProvider);
-          }),
+
+          // Codice Psicologo: SOLA LETTURA, arriva dal Login
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Codice Psicologo',
+                style: TextStyle(fontSize: 15, color: Colors.black87),
+              ),
+              Text(
+                userProvider.psychologistCode,
+                style: const TextStyle(fontSize: 15, color: Colors.black45),
+              ),
+            ],
+          ),
         ],
       ),
     );
