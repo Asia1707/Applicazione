@@ -4,6 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:astemix_drugbalix/services/impact.dart';
 import 'package:astemix_drugbalix/screens/homepage.dart'; 
 
+import 'package:provider/provider.dart';
+import 'package:astemix_drugbalix/providers/user_provider.dart';
+
+
 class Login extends StatefulWidget { //stateful perchè fa il refresh in base all'azione dell'utente (toggle specialista, occhiolino)
   const Login({super.key});
 
@@ -191,6 +195,9 @@ class _LoginState extends State<Login> {
                       
                       if (_showSpecialistField && specialistController.text.isNotEmpty) { //se il toggle è acceso
                         await sp.setString('specialist_code', specialistController.text); //salvo il codice dello specialista
+                      }
+                      if(_showSpecialistField && specialistController.text.isNotEmpty){
+                        context.read<UserProvider>().updatePsychologistCode(specialistController.text);
                       }
 
 
