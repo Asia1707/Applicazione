@@ -51,10 +51,9 @@ class _HomeState extends State<Home> {
 
   Future<void> giornoSuccessivo() async {
     setState(() {
-      if (haBevuto == true) {
-        streak = 0;
-      } else {
-        streak++;
+      if (haBevuto == false) {
+        streak ++;
+      
       }
       giorno++;
       haBevuto = null;
