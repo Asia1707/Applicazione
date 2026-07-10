@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-// Colore 
+// Colore ufficiale dell'app (stesso del logo/bottone Login),
+// lo definisco una volta sola qui in cima così lo riuso ovunque
+// senza riscrivere il codice colore ogni volta
 const Color appColor = Color(0xFF0F8A8F);
 
 class SettingsScreen extends StatefulWidget {
@@ -24,34 +26,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Modifica nome utente'),
-          content: TextField(
-            controller: controller,
-            autofocus: true, // il cursore si posiziona subito qui
-            cursorColor: appColor, // il cursore lampeggiante è del colore dell'app
+        // Avvolgo TUTTO il dialogo (bottoni, campo di testo, cursore)
+        // in un unico Theme, così ogni elemento che normalmente userebbe
+        // il colore "di sistema" (viola su Android) diventa invece verde
+        return Theme(
+          data: Theme.of(context).copyWith(
+            // colorScheme.primary: colore principale del tema.
+            // I TextButton senza stile esplicito lo usano automaticamente,
+            // quindi sia "Annulla" che "Salva" diventano verdi senza doverlo
+            // scrivere a mano su ciascuno
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: appColor,
+            ),
+            // textSelectionTheme: colora il cursore lampeggiante e la
+            // "maniglia" di selezione del testo nel campo
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: appColor,
+              selectionHandleColor: appColor,
+            ),
           ),
-          actions: [
-            // Bottone "Annulla": chiude il popup senza salvare
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Annulla'),
+          child: AlertDialog(
+            title: const Text('Modifica nome utente'),
+            content: TextField(
+              controller: controller,
+              autofocus: true, // il cursore si posiziona subito qui
             ),
-            // Bottone "Salva": aggiorna il Provider e chiude il popup
-            TextButton(
-              // style: cambio il colore del testo del bottone
-              style: TextButton.styleFrom(
-                foregroundColor: appColor,
+            actions: [
+              // Bottone "Annulla": chiude il popup senza salvare
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Annulla'),
               ),
-              onPressed: () {
-                userProvider.updateUserName(controller.text);
-                Navigator.pop(context);
-              },
-              child: const Text('Salva'),
-            ),
-          ],
+              // Bottone "Salva": aggiorna il Provider e chiude il popup
+              TextButton(
+                onPressed: () {
+                  userProvider.updateUserName(controller.text);
+                  Navigator.pop(context);
+                },
+                child: const Text('Salva'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -111,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Divider(), // linea sottile di separazione
 
-          // Codice Psicologo: arriva dal Login
+          // Codice Psicologo: SOLA LETTURA, arriva dal Login
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -299,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16), // spazio tra le card
           _buildProgressCard(userProvider),
           const SizedBox(height: 16),
-          _buildTargetCard(), // card "Obiettivo" rimessa nella lista
+          _buildTargetCard(),
           const SizedBox(height: 16),
           _buildShareDataCard(),
         ],
