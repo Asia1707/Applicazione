@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-// Colore ufficiale dell'app (stesso del logo/bottone Login),
-// lo definisco una volta sola qui in cima così lo riuso ovunque
-// senza riscrivere il codice colore ogni volta
+// Colore 
 const Color appColor = Color(0xFF0F8A8F);
 
 class SettingsScreen extends StatefulWidget {
@@ -113,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Divider(), // linea sottile di separazione
 
-          // Codice Psicologo: SOLA LETTURA, arriva dal Login
+          // Codice Psicologo: arriva dal Login
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
