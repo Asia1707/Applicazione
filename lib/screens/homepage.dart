@@ -76,10 +76,9 @@ class _HomeState extends State<Home> {
     await prefs.setString('umore_giorno_$giorno', umore); // <-- AGGIUNTO IL SALVATAGGIO DELL'UMORE
 
     setState(() {
-      if (haBevuto == true) {
-        streak = 0;
-      } else {
-        streak++;
+      if (haBevuto == false) {
+        streak ++;
+      
       }
       giorno++;
       haBevuto = null;
