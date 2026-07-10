@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-// Colore 
+// Colore ufficiale dell'app (stesso del logo/bottone Login),
+// lo definisco una volta sola qui in cima così lo riuso ovunque
+// senza riscrivere il codice colore ogni volta
 const Color appColor = Color(0xFF0F8A8F);
 
 class SettingsScreen extends StatefulWidget {
@@ -29,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: TextField(
             controller: controller,
             autofocus: true, // il cursore si posiziona subito qui
-            cursorColor: appColor,
+            cursorColor: appColor, // il cursore lampeggiante è del colore dell'app
           ),
           actions: [
             // Bottone "Annulla": chiude il popup senza salvare
@@ -111,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Divider(), // linea sottile di separazione
 
-          // Codice Psicologo: arriva dal Login
+          // Codice Psicologo: SOLA LETTURA, arriva dal Login
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -297,7 +299,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           _buildProfileCard(userProvider),
           const SizedBox(height: 16), // spazio tra le card
-          _buildProgressCard(userProvider), // passo userProvider come parametro
+          _buildProgressCard(userProvider),
+          const SizedBox(height: 16),
+          _buildTargetCard(), // card "Obiettivo" rimessa nella lista
           const SizedBox(height: 16),
           _buildShareDataCard(),
         ],
