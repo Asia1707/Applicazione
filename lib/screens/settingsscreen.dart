@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
+// Colore 
+const Color appColor = Color(0xFF0F8A8F);
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -10,9 +13,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // variabile che tiene lo stato dello switch (acceso/spento)
   bool _shareDataWithPsychologist = true;
 
+  // Metodo che apre il popup per modificare il nome utente
   void _editUserName(UserProvider userProvider) {
+    // controller: legge/scrive il testo che l'utente digita nel campo
     final controller = TextEditingController(text: userProvider.userName);
 
     showDialog(
@@ -22,16 +28,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: const Text('Modifica nome utente'),
           content: TextField(
             controller: controller,
-            autofocus: true,
+            autofocus: true, // il cursore si posiziona subito qui
+            cursorColor: appColor,
           ),
           actions: [
+            // Bottone "Annulla": chiude il popup senza salvare
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: const Text('Annulla'),
             ),
+            // Bottone "Salva": aggiorna il Provider e chiude il popup
             TextButton(
+              // style: cambio il colore del testo del bottone
+              style: TextButton.styleFrom(
+                foregroundColor: appColor,
+              ),
               onPressed: () {
                 userProvider.updateUserName(controller.text);
                 Navigator.pop(context);
@@ -44,11 +57,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // Widget riutilizzabile per una riga "etichetta + valore + matita cliccabile"
   Widget _buildInfoRow(String label, String value, VoidCallback onTap) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap, // cosa fare quando si clicca sulla riga
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // spazio tra etichetta e valore
         children: [
           Text(
             label,
@@ -60,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value,
                 style: const TextStyle(fontSize: 15, color: Colors.black45),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 8), // piccolo spazio tra testo e icona
               const Icon(Icons.edit_outlined, size: 18, color: Colors.black45),
             ],
           ),
@@ -69,15 +83,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // Card "Profilo": nome utente (modificabile) + codice psicologo (sola lettura)
   Widget _buildProfileCard(UserProvider userProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16), // angoli arrotondati
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start, // testo allineato a sinistra
         children: [
           const Text(
             'Profilo',
@@ -89,14 +104,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Nome utente: modificabile con dialogo
+          // Nome utente: cliccabile, apre il dialogo di modifica
           _buildInfoRow('Nome utente', userProvider.userName, () {
             _editUserName(userProvider);
           }),
 
-          const Divider(),
+          const Divider(), // linea sottile di separazione
 
-          // Codice Psicologo: SOLA LETTURA, arriva dal Login
+          // Codice Psicologo: arriva dal Login
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -115,7 +130,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildProgressCard() {
+  // Card "I tuoi progressi": prende i dati veri dal Provider,
+  // aggiornati dalla Home Screen
+  Widget _buildProgressCard(UserProvider userProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -134,6 +151,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 12),
+
+          // Riga "Check-in completati"
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -147,13 +166,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-              const Text(
-                '15',
-                style: TextStyle(fontSize: 15, color: Colors.black54),
+              // leggo il numero dal Provider e lo trasformo in testo con .toString()
+              Text(
+                userProvider.checkInCount.toString(),
+                style: const TextStyle(fontSize: 15, color: Colors.black54),
               ),
             ],
           ),
+
           const Divider(),
+
+          // Riga "Streak" (streak attuale, aggiornata dalla Home)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -162,14 +185,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Icon(Icons.local_fire_department_outlined, size: 20, color: Colors.orange),
                   const SizedBox(width: 8),
                   const Text(
-                    'Streak migliore',
+                    'Streak',
                     style: TextStyle(fontSize: 15, color: Colors.black87),
                   ),
                 ],
               ),
-              const Text(
-                '12 giorni',
-                style: TextStyle(fontSize: 15, color: Colors.black54),
+              // uso l'interpolazione di stringa ($) per unire numero e testo "giorni"
+              Text(
+                '${userProvider.currentStreak} giorni',
+                style: const TextStyle(fontSize: 15, color: Colors.black54),
               ),
             ],
           ),
@@ -178,6 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // Card "Obiettivo": target personale, testo fisso per ora
   Widget _buildTargetCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -205,7 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'Target personale',
                 style: TextStyle(fontSize: 15, color: Colors.black87),
               ),
-              const Spacer(),
+              const Spacer(), // spinge il testo successivo tutto a destra
               const Text(
                 '30 giorni senza alcol',
                 style: TextStyle(fontSize: 15, color: Colors.black54),
@@ -217,6 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // Card con lo switch "Invia i miei dati allo psicologo"
   Widget _buildShareDataCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -232,10 +258,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(fontSize: 15, color: Colors.black87),
           ),
           Switch(
-            value: _shareDataWithPsychologist,
+            value: _shareDataWithPsychologist, // stato attuale (acceso/spento)
+            activeThumbColor: appColor, // colore quando è acceso
             onChanged: (newValue) {
               setState(() {
-                _shareDataWithPsychologist = newValue;
+                _shareDataWithPsychologist = newValue; // aggiorno lo stato
               });
             },
           ),
@@ -246,13 +273,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // leggo il Provider condiviso: "watch" fa sì che questa schermata
+    // si ridisegni automaticamente ogni volta che qualcosa cambia
     final userProvider = context.watch<UserProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF9),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF0FDF9),
-        elevation: 0,
+        elevation: 0, // niente ombra sotto la barra
         title: const Text(
           'Impostazioni',
           style: TextStyle(
@@ -262,13 +291,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: ListView(
+        // ListView invece di Column: permette di scorrere se il contenuto
+        // non entra tutto nello schermo
         padding: const EdgeInsets.all(16),
         children: [
           _buildProfileCard(userProvider),
-          const SizedBox(height: 16),
-          _buildProgressCard(),
-          const SizedBox(height: 16),
-          _buildTargetCard(),
+          const SizedBox(height: 16), // spazio tra le card
+          _buildProgressCard(userProvider), // passo userProvider come parametro
           const SizedBox(height: 16),
           _buildShareDataCard(),
         ],
