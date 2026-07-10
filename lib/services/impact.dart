@@ -102,11 +102,12 @@ class Impact { //indirizzi per il login
 
   Future<List<RHR>> getRestingHeartRateFromDay(DateTime startTime) async {
     final sp = await SharedPreferences.getInstance();
-    String? user = sp.getString('impactPatient'); //recupero il nome utente dalla memoria
+    String? user = sp.getString('impactPatient'); 
 
     var header = await getBearer();
-    var end = DateFormat('y-M-d').format(startTime); // Format AAAA-mm-dd 
-    var start = DateFormat('y-M-d').format(startTime.subtract(const Duration(days: 1)));
+    var end = DateFormat('yyyy-MM-dd').format(startTime);  
+    var start = DateFormat('yyyy-MM-dd').format(startTime.subtract(const Duration(days: 1)));
+    
     var r = await http.get(
       Uri.parse('${Impact.baseUrl}data/v1/resting_heart_rate/patients/$user/daterange/start_date/$start/end_date/$end/'),
       headers: header,
@@ -117,33 +118,35 @@ class Impact { //indirizzi per il login
     List<dynamic> data = jsonDecode(r.body)['data'];
     List<RHR> rhrList = [];
     
-    for (var daydata in data) { // Ciclo sui vari giorni scaricati
-      if (daydata['data'] != null && daydata['data'].isNotEmpty) {
+    for (var daydata in data) {
+      // Controlliamo che 'data' esista e sia una mappa (dizionario), non una lista
+      if (daydata['data'] != null && daydata['data'] is Map) {
         
-        String day = daydata['date']; // data del giorno
-        for (var dataday in daydata['data']) { //prendo le variabili
+        String day = daydata['date']; 
+        var dataday = daydata['data']; // Estraiamo l'oggetto direttamente, SENZA il ciclo for
+
+        // A volte il server potrebbe restituire dati incompleti, facciamo un controllo di sicurezza
+        if (dataday.containsKey('time') && dataday.containsKey('value')) {
           String hour = dataday['time'];
-          String datetime = '${day}T$hour'; // giorno e ora insieme
+          String datetime = '${day}T$hour'; 
           DateTime timestamp = _truncateSeconds(DateTime.parse(datetime)); 
           double? rhrValue; 
           
-        // Controllo se il valore è un numero intero. Se è un numero intero lo converto in double. Se lo lascio int l'app si aspetta un double e crasha
           if (dataday['value'] != null) {
             rhrValue = (dataday['value'] is int) 
                 ? (dataday['value'] as int).toDouble() 
-                : dataday['value'];
+                : (dataday['value'] as double); // Forza il cast a double per sicurezza
           }
 
           RHR rhrNew = RHR(timestamp: timestamp, value: rhrValue);
           
-          if (!rhrList.any((e) => e.timestamp.isAtSameMomentAs(rhrNew.timestamp))) { // controllo non ci siano doppioni
+          if (!rhrList.any((e) => e.timestamp.isAtSameMomentAs(rhrNew.timestamp))) { 
             rhrList.add(rhrNew);
           }
         }
       }
     }
     
-    // Riordina i battiti dal più vecchio al più recente prima di restituirli
     var sortedList = rhrList.toList()..sort((a, b) => a.timestamp.compareTo(b.timestamp));
     return sortedList;
   }
@@ -151,22 +154,24 @@ class Impact { //indirizzi per il login
    // DATI SONNO
 
   Future<List<SleepData>> getSleepDataFromDay(DateTime startTime) async {
-    // Aggiunto il recupero del nome utente dinamico dalla memoria
     final sp = await SharedPreferences.getInstance();
     String? user = sp.getString('impactPatient');
 
     var header = await getBearer();
-    var end = DateFormat('y-M-d').format(startTime);
-    var start = DateFormat('y-M-d').format(startTime.subtract(const Duration(days: 1)));
+    var end = DateFormat('yyyy-MM-dd').format(startTime);
+    var start = DateFormat('yyyy-MM-dd').format(startTime.subtract(const Duration(days: 1)));
     
-    // Aggiornato l'URL per usare $user
+    final url = '${Impact.baseUrl}data/v1/sleep/patients/$user/daterange/start_date/$start/end_date/$end/';
+    print('URL SONNO: $url'); 
+
     var r = await http.get(
-      Uri.parse('${Impact.baseUrl}data/v1/sleep/patients/$user/daterange/start_date/$start/end_date/$end/'),
+      Uri.parse(url),
       headers: header,
     );
 
     if (r.statusCode != 200) {
       print('Errore API Sonno: ${r.statusCode}'); 
+      print('Corpo risposta errore: ${r.body}'); 
       return [];
     }
 
@@ -174,15 +179,16 @@ class Impact { //indirizzi per il login
     List<SleepData> sleepRecords = [];
 
     for (var dayRecord in responseData) {
-      if (dayRecord['data'] != null) {
-        sleepRecords.add(SleepData.fromJson(dayRecord['data']));
+      final dailyData = dayRecord['data'];
+      
+      if (dailyData != null && dailyData is Map<String, dynamic>) {
+        sleepRecords.add(SleepData.fromJson(dailyData));
       }
     }
 
     return sleepRecords;
   }
-  
-  // Rimuove i secondi dal timestamp per avere orari esatti e puliti
+
   DateTime _truncateSeconds(DateTime input) {
     return DateTime(input.year, input.month, input.day, input.hour, input.minute);
   }

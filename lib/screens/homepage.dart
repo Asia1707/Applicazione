@@ -4,7 +4,6 @@ import 'dart:math';
 
 // importo le schermate per la bottom navigation bar
 import 'statisticsscreen.dart';
-import 'moodscreen.dart';
 import 'settingsscreen.dart';
 
 class Home extends StatefulWidget {
@@ -23,6 +22,7 @@ class _HomeState extends State<Home> {
   bool? haBevuto;
   String umore = '';
   String nomeUtente = '';
+  DateTime? dataInizio; // Data di inizio percorso, fissa al 1° marzo 2026
 
   int _indiceSelezionato = 0; // indice della BottomNavigationBar
 
@@ -36,10 +36,21 @@ class _HomeState extends State<Home> {
 
   Future<void> _caricaDati() async {
     final prefs = await SharedPreferences.getInstance();
+    final dataInizioSalvata = prefs.getString('data_inizio');
+
+    DateTime dataInizioEffettiva;
+    if (dataInizioSalvata != null) {
+      dataInizioEffettiva = DateTime.parse(dataInizioSalvata);
+    } else {
+      dataInizioEffettiva = DateTime(2026, 3, 1);
+      await prefs.setString('data_inizio', dataInizioEffettiva.toIso8601String());
+    }
+
     setState(() {
       nomeUtente = prefs.getString('nome_utente') ?? '';
       streak = prefs.getInt('streak') ?? 0;
       giorno = prefs.getInt('giorno') ?? 1;
+      dataInizio = dataInizioEffettiva;
     });
   }
 
@@ -49,7 +60,21 @@ class _HomeState extends State<Home> {
     await prefs.setInt('giorno', giorno);
   }
 
+  double get percentuale => min(streak / obiettivoGiorni, 1.0);
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _indiceSelezionato = index;
+    });
+  }
+
   Future<void> giornoSuccessivo() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Salvo le risposte per la giornata appena conclusa
+    await prefs.setBool('alcol_giorno_$giorno', haBevuto ?? false);
+    await prefs.setString('umore_giorno_$giorno', umore); // <-- AGGIUNTO IL SALVATAGGIO DELL'UMORE
+
     setState(() {
       if (haBevuto == true) {
         streak = 0;
@@ -63,247 +88,225 @@ class _HomeState extends State<Home> {
     await _salvaDati();
   }
 
-  double get percentuale => min(streak / obiettivoGiorni, 1.0);
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _indiceSelezionato = index;
-    });
+  // Aggiunto umoreOggi ai dati esportati
+  ({DateTime data, bool haBevutoOggi, String umoreOggi}) datiPerStatistiche() {
+    final base = dataInizio ?? DateTime(2026, 3, 1);
+    final dataSimulata = base.add(Duration(days: giorno - 1));
+    return (data: dataSimulata, haBevutoOggi: haBevuto ?? false, umoreOggi: umore);
   }
 
   @override
   Widget build(BuildContext context) {
+    final infoStatistiche = datiPerStatistiche();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF9),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0D9488),
-        foregroundColor: Colors.white,
-        title: const Text(
-          'ASTEMIX',
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
-        ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-
-      body: IndexedStack(
-        index: _indiceSelezionato,
-        children: [
-          SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea( 
+        child: IndexedStack(
+          index: _indiceSelezionato,
           children: [
-            // Saluto e giorno del percorso
-            Text(
-              nomeUtente.isEmpty ? 'Ciao! 👋' : 'Ciao, $nomeUtente! 👋',
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Giorno $giorno del tuo percorso',
-              style: const TextStyle(fontSize: 15, color: Colors.black54),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Card alcol
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Hai bevuto alcol oggi?',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nomeUtente.isEmpty ? 'Ciao! 👋' : 'Ciao, $nomeUtente! 👋',
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _bottoneRisposta('No', false),
-                        const SizedBox(width: 20),
-                        _bottoneRisposta('Sì', true),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Card umore
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Come ti senti oggi?',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        bottoneUmore('☀️', 'Calmo'),
-                        bottoneUmore('🌤️', 'Ok'),
-                        bottoneUmore('☁️', 'Neutro'),
-                        bottoneUmore('🌧️', 'Triste'),
-                        bottoneUmore('⛈️', 'Stressato'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Card streak con cerchio percentuale
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 16),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 72,
-                      height: 72,
-                      child: Stack(
-                        alignment: Alignment.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Giorno $giorno del tuo percorso',
+                    style: const TextStyle(fontSize: 15, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 20),
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
                         children: [
-                          CircularProgressIndicator(
-                            value: percentuale,
-                            strokeWidth: 7,
-                            backgroundColor: Colors.grey.shade200,
-                            valueColor:
-                                const AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF0D9488)),
+                          const Text(
+                            'Hai bevuto alcol oggi?',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          Text(
-                            '${(percentuale * 100).round()}%',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0D9488),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _bottoneRisposta('No', false),
+                              const SizedBox(width: 20),
+                              _bottoneRisposta('Sì', true),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Come ti senti oggi?',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              bottoneUmore('☀️', 'Calmo'),
+                              bottoneUmore('🌤️', 'Ok'),
+                              bottoneUmore('☁️', 'Neutro'),
+                              bottoneUmore('🌧️', 'Triste'),
+                              bottoneUmore('⛈️', 'Stressato'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 16),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 72,
+                            height: 72,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  value: percentuale,
+                                  strokeWidth: 7,
+                                  backgroundColor: Colors.grey.shade200,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          Color(0xFF0D9488)),
+                                ),
+                                Text(
+                                  '${(percentuale * 100).round()}%',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0D9488),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('🔥',
+                                        style: TextStyle(fontSize: 26)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '$streak giorni\nsenza alcol',
+                                      style: const TextStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Obiettivo: $obiettivoGiorni giorni',
+                                  style: const TextStyle(
+                                      fontSize: 13, color: Colors.black54),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 2,
+                    color: const Color(0xFFCCFBF1),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Text('🔥',
-                                  style: TextStyle(fontSize: 26)),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$streak giorni\nsenza alcol',
-                                style: const TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Obiettivo: $obiettivoGiorni giorni',
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.black54),
+                          const Text('💡', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              messaggioInsight(),
+                              style: const TextStyle(
+                                  fontSize: 15, color: Color(0xFF134E4A)),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Card insight
-            Card(
-              elevation: 2,
-              color: const Color(0xFFCCFBF1),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('💡', style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        messaggioInsight(),
-                        style: const TextStyle(
-                            fontSize: 15, color: Color(0xFF134E4A)),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: haBevuto == null || umore == ''
+                          ? null
+                          : giornoSuccessivo,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D9488),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        elevation: 3,
+                      ),
+                      child: const Text(
+                        'VAI AL GIORNO SUCCESSIVO',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            // Bottone avanza
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: haBevuto == null || umore == ''
-                    ? null
-                    : giornoSuccessivo,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0D9488),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 3,
-                ),
-                child: const Text(
-                  'VAI AL GIORNO SUCCESSIVO',
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+            StatisticsScreen(
+              currentDate: infoStatistiche.data,
+              currentDay: giorno,
+              hasConsumedAlcoholToday: infoStatistiche.haBevutoOggi,
+              currentMoodToday: infoStatistiche.umoreOggi, // <-- PASSIAMO IL NUOVO DATO
             ),
-
-            const SizedBox(height: 10),
+            const SettingsScreen(),
           ],
         ),
       ),
-
-          const StatisticsScreen(), // Schermata statistiche
-          const MoodScreen(),       // Schermata mood
-          const SettingsScreen(),   // Schermata impostazioni
-        ],
-      ), 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceSelezionato,
         onTap: _onItemTapped,
@@ -314,7 +317,6 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(Icons.bar_chart), label: 'Stats'),
-          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Mood'),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings), label: 'Impostazioni'),
         ],

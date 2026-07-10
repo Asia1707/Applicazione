@@ -192,6 +192,8 @@ class _LoginState extends State<Login> {
                       
                       await sp.setString('username', userController.text); //salvo username
                       await sp.setString('password', passwordController.text); //salvo password
+
+                      await impact.getPatient();
                       
                       if (_showSpecialistField && specialistController.text.isNotEmpty) { //se il toggle è acceso
                         await sp.setString('specialist_code', specialistController.text); //salvo il codice dello specialista
