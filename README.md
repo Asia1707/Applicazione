@@ -1,5 +1,4 @@
-# astemix_drugbalix
-
+# astemix
 A new Flutter project.
 
 ## Getting Started
