@@ -170,7 +170,8 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFF384242), width: 2), 
                       ),
-                      // Icona tematica fissa sulla destra del campo
+
+                      // Icona fissa sulla destra
                       suffixIcon: Icon(
                         Icons.medical_services,
                         color: Colors.grey.shade600, 
@@ -186,7 +187,10 @@ class _LoginState extends State<Login> {
                   onPressed: () async { //async perché contiene operazioni che richiedono tempo. Deve richiedere i token
                     final result = await impact.getAndStoreTokens(
                         userController.text, passwordController.text);
-                    
+
+                    // Il widget potrebbe essere stato smontato (es. l'utente ha chiuso la schermata) mentre aspettavamo la risposta del server: se è successo, non usiamo più "context" per evitare errori
+                    if (!context.mounted) return;
+
                     if (result == 200) { //se la chiamata ha successo esce HTTP 200
                       final sp = await SharedPreferences.getInstance(); //salva username e password in locale
                       
@@ -194,17 +198,17 @@ class _LoginState extends State<Login> {
                       await sp.setString('password', passwordController.text); //salvo password
 
                       await impact.getPatient();
-                      
-                      if (_showSpecialistField && specialistController.text.isNotEmpty) { //se il toggle è acceso
+
+                      // Altro controllo dopo i nuovi await, per lo stesso motivo di sopra
+                      if (!context.mounted) return;
+
+                      // Se il toggle "paziente seguito" è acceso e il codice non è vuoto, salvo il codice sia in locale che nel provider
+                      if (_showSpecialistField && specialistController.text.isNotEmpty) {
                         await sp.setString('specialist_code', specialistController.text); //salvo il codice dello specialista
-                      }
-                      if(_showSpecialistField && specialistController.text.isNotEmpty){
                         context.read<UserProvider>().updatePsychologistCode(specialistController.text);
                       }
 
-
-                      // Naviga verso la Homepage. pushReplacement "distrugge" la pagina di login, 
-                      // in modo che se l'utente preme il tasto "indietro" non torni qui ma esca dall'app
+                      // Naviga verso la Homepage. pushReplacement "distrugge" la pagina di login, in modo che se l'utente preme il tasto "indietro" non torni qui ma esca dall'app
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(

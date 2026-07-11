@@ -1,68 +1,68 @@
+// MODELLO SCORE CHARTS
+
 import 'package:flutter/material.dart';
 
-class AstemixScoreChart extends StatelessWidget {
-  final int score;
+class ScoreChart extends StatelessWidget {
+  final int score; // Punteggio da 0 a 100 da visualizzare
 
-  const AstemixScoreChart({super.key, required this.score});
+  const ScoreChart({super.key, required this.score});
 
   @override
-  Widget build(BuildContext context) {
-    // Determina il colore in base all'Indice di Recupero
+  Widget build(BuildContext context) { 
     Color scoreColor;
-    if (score >= 75) {
-      scoreColor = const Color(0xFF13898C); // Turchese (Ottimo)
-    } else if (score >= 50) {
-      scoreColor = Colors.orangeAccent; // Arancione (Discreto)
-    } else {
-      scoreColor = Colors.redAccent; // Rosso (Da migliorare)
+    if (score >= 75) { // QUI PER CAMBIARE SOGLIA OTTIMA
+      scoreColor = const Color(0xFF13898C);
+    } else if (score >= 50) { // QUI PER CAMBIARE SOGLIA MEDIA
+      scoreColor = Colors.orangeAccent;
+    } else { // QUI PER CAMBIARE SOGLIA BASSA
+      scoreColor = Colors.redAccent;
     }
 
     return Center(
       child: SizedBox(
-        width: 200,
-        height: 200,
-        // Animazione che fa salire il livello del cerchio partendo da 0
-        child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: score / 100.0),
-          duration: const Duration(milliseconds: 1500),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) {
+        width: 200, // QUI PER CAMBIARE LARGHEZZA DEL CERCHIO
+        height: 200, // QUI PER CAMBIARE ALTEZZA DEL CERCHIO
+        child: TweenAnimationBuilder<double>( // animazione riempimento fino al punteggio
+          tween: Tween<double>(begin: 0, end: score / 100.0), // fino alla percentuale corrispondente
+          duration: const Duration(milliseconds: 1500), // durata dell'animazione
+          curve: Curves.easeOutCubic, // velocità ed effetto dell'animazione
+          builder: (context, value, child) { //value si aggiorna iterativamente
             return Stack(
               fit: StackFit.expand,
+
               children: [
-                // Cerchio di sfondo opaco
-                CircularProgressIndicator(
-                  value: 1.0,
-                  strokeWidth: 18,
-                  color: Colors.grey.shade200,
+                CircularProgressIndicator( // cerchio di sfondo
+                  value: 1.0, // sempre pieno
+                  strokeWidth: 18, // QUI PER CAMBIARE SPESSORE DEL CERCHIO DI SFONDO
+                  color: Colors.grey.shade200, // QUI PER CAMBIARE COLORE DEL CERCHIO DI SFONDO
                 ),
-                // Cerchio del punteggio che si riempie
-                CircularProgressIndicator(
-                  value: value,
-                  strokeWidth: 18,
-                  backgroundColor: Colors.transparent,
-                  color: scoreColor,
-                  strokeCap: StrokeCap.round, // Angoli smussati per un design pulito
+
+                CircularProgressIndicator( // cerchio colorato
+                  value: value, // percentuale corrente dell'animazione 
+                  backgroundColor: Colors.transparent, // lascia visibile il cerchio grigio sotto
+                  strokeWidth: 18, // QUI PER CAMBIARE LO SPESSORE DEL CERCHIO DEL PUNTEGGIO
+                  color: scoreColor, // assegna il colore in base allo score
+                  strokeCap: StrokeCap.round, // angoli smussati degli estremi
                 ),
-                // Numeri animati al centro
-                Center(
+                
+                Center( // testo al centro del cerchio con il numero del punteggio
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.min, // centra verticalmente il testo
                     children: [
                       Text(
-                        '${(value * 100).toInt()}', 
+                        '${(value * 100).toInt()}', // valore corrente arrotondato a intero
                         style: TextStyle(
-                          fontSize: 56,
+                          fontSize: 56, // QUI PER CAMBIARE LA DIMENSIONE DEL NUMERO CENTRALE
                           fontWeight: FontWeight.bold,
-                          color: scoreColor,
-                          height: 1.0,
+                          color: scoreColor, // stesso colore del cerchio
+                          height: 1.0, // riduce lo spazio verticale extra del testo
                         ),
                       ),
                       const Text(
                         '/ 100',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                        style: TextStyle( 
+                          fontSize: 16, // QUI PER CAMBIARE LA DIMENSIONE DEL TESTO
+                          color: Colors.grey, // QUI PER CAMBIARE IL COLORE DEL TESTO
                           fontWeight: FontWeight.w600,
                         ),
                       ),
