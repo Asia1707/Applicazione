@@ -45,8 +45,8 @@ class _LoginState extends State<Login> {
                 Align(
                   alignment: Alignment.center, 
                   child: Image.asset( 
-                    'assets/logo.png', //CARICA IN PUBSPEC 
-                    height: 120, //QUI PER CAMBIARE DIMENSIONE LOGO
+                    'assets/logo_nuovo.png', //CARICA IN PUBSPEC 
+                    height: 180, //QUI PER CAMBIARE DIMENSIONE LOGO
                   ), 
                 ),
                 

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math';
+import 'dart:math'; // serve per la funzione min(), usata nel calcolo della percentuale
 
-// importo le schermate per la bottom navigation bar
+// import per collegare questa schermata al Provider condiviso con Nome utente,
+// Codice psicologo, Check-in e Streak
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
+
+// importo le altre schermate per poterle mostrare nella bottom navigation bar
 import 'statisticsscreen.dart';
 import 'settingsscreen.dart';
 
@@ -22,9 +27,9 @@ class _HomeState extends State<Home> {
   bool? haBevuto;
   String umore = '';
   String nomeUtente = '';
-  DateTime? dataInizio; // Data di inizio percorso, fissa al 1° marzo 2026
+  DateTime? dataInizio;
 
-  int _indiceSelezionato = 0; // indice della BottomNavigationBar
+  int _indiceSelezionato = 0;
 
   static const int obiettivoGiorni = 30;
 
@@ -52,6 +57,8 @@ class _HomeState extends State<Home> {
       giorno = prefs.getInt('giorno') ?? 1;
       dataInizio = dataInizioEffettiva;
     });
+
+    context.read<UserProvider>().updateProgress(giorno, streak);
   }
 
   Future<void> _salvaDati() async {
@@ -71,23 +78,22 @@ class _HomeState extends State<Home> {
   Future<void> giornoSuccessivo() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Salvo le risposte per la giornata appena conclusa
     await prefs.setBool('alcol_giorno_$giorno', haBevuto ?? false);
-    await prefs.setString('umore_giorno_$giorno', umore); // <-- AGGIUNTO IL SALVATAGGIO DELL'UMORE
+    await prefs.setString('umore_giorno_$giorno', umore);
 
     setState(() {
       if (haBevuto == false) {
-        streak ++;
-      
+        streak++;
       }
       giorno++;
       haBevuto = null;
       umore = '';
     });
     await _salvaDati();
+
+    context.read<UserProvider>().updateProgress(giorno, streak);
   }
 
-  // Aggiunto umoreOggi ai dati esportati
   ({DateTime data, bool haBevutoOggi, String umoreOggi}) datiPerStatistiche() {
     final base = dataInizio ?? DateTime(2026, 3, 1);
     final dataSimulata = base.add(Duration(days: giorno - 1));
@@ -100,7 +106,7 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF9),
-      body: SafeArea( 
+      body: SafeArea(
         child: IndexedStack(
           index: _indiceSelezionato,
           children: [
@@ -179,18 +185,20 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // ---- CARD STREAK: cerchio percentuale + info streak ----
                   Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 16),
+                      padding: const EdgeInsets.all(18),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(
-                            width: 72,
-                            height: 72,
+                            width: 80,
+                            height: 80,
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
@@ -205,7 +213,7 @@ class _HomeState extends State<Home> {
                                 Text(
                                   '${(percentuale * 100).round()}%',
                                   style: const TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF0D9488),
                                   ),
@@ -213,26 +221,30 @@ class _HomeState extends State<Home> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 18),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Row(
                                   children: [
                                     const Text('🔥',
-                                        style: TextStyle(fontSize: 26)),
+                                        style: TextStyle(fontSize: 24)),
                                     const SizedBox(width: 8),
-                                    Text(
-                                      '$streak giorni\nsenza alcol',
-                                      style: const TextStyle(
-                                        fontSize: 19,
-                                        fontWeight: FontWeight.bold,
+                                    Flexible(
+                                      child: Text(
+                                        '$streak giorni senza alcol',
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 8),
                                 Text(
                                   'Obiettivo: $obiettivoGiorni giorni',
                                   style: const TextStyle(
@@ -245,6 +257,7 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 16),
                   Card(
                     elevation: 2,
@@ -300,7 +313,7 @@ class _HomeState extends State<Home> {
               currentDate: infoStatistiche.data,
               currentDay: giorno,
               hasConsumedAlcoholToday: infoStatistiche.haBevutoOggi,
-              currentMoodToday: infoStatistiche.umoreOggi, // <-- PASSIAMO IL NUOVO DATO
+              currentMoodToday: infoStatistiche.umoreOggi,
             ),
             const SettingsScreen(),
           ],
@@ -326,7 +339,7 @@ class _HomeState extends State<Home> {
   Widget _bottoneRisposta(String testo, bool valore) {
     final bool selezionato = haBevuto == valore;
     final Color coloreAttivo =
-        valore ? const Color(0xFFEF4444) : const Color(0xFF0D9488);
+        valore ? const Color(0xFFF97316) : const Color(0xFF0D9488);
 
     return ElevatedButton(
       onPressed: () => setState(() => haBevuto = valore),
