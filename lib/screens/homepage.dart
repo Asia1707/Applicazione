@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math'; // serve per la funzione min(), usata nel calcolo della percentuale
+import 'dart:math'; // serve per la funzione min(), usata per calcolare la percentuale
 
-// import per collegare questa schermata al Provider condiviso con Nome utente,
-// Codice psicologo, Check-in e Streak
+// Provider condiviso: qui dentro ci sono nome utente, codice psicologo,
+// check-in completati e streak, letti anche dalla Settings Screen
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-// importo le altre schermate per poterle mostrare nella bottom navigation bar
+// Le altre due schermate mostrate nella barra in basso
 import 'statisticsscreen.dart';
 import 'settingsscreen.dart';
 
@@ -22,31 +22,37 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int streak = 0;
-  int giorno = 1;
-  bool? haBevuto;
-  String umore = '';
-  String nomeUtente = '';
-  DateTime? dataInizio;
+  // Dati principali della schermata, tutti modificabili con setState
+  int streak = 0; // giorni consecutivi senza alcol
+  int giorno = 1; // a che giorno del percorso siamo
+  bool? haBevuto; // risposta di oggi (null = non ha ancora risposto)
+  String umore = ''; // umore scelto oggi (vuoto = non ancora scelto)
+  String nomeUtente = ''; // nome mostrato nel saluto
+  DateTime? dataInizio; // data di inizio del percorso (fissa: 1 marzo 2026)
 
-  int _indiceSelezionato = 0;
+  int _indiceSelezionato = 0; // quale schermata è aperta in basso (Home/Stats/Impostazioni)
 
-  static const int obiettivoGiorni = 30;
+  static const int obiettivoGiorni = 30; // obiettivo: 30 giorni senza alcol
 
   @override
   void initState() {
     super.initState();
+    // Appena si apre la Home, carico tutti i dati salvati in precedenza
     _caricaDati();
   }
 
+  // Legge streak, giorno e nome utente da SharedPreferences
+  // (la memoria del telefono, che resta anche chiudendo l'app)
   Future<void> _caricaDati() async {
     final prefs = await SharedPreferences.getInstance();
     final dataInizioSalvata = prefs.getString('data_inizio');
 
     DateTime dataInizioEffettiva;
     if (dataInizioSalvata != null) {
+      // c'era già una data salvata, la uso
       dataInizioEffettiva = DateTime.parse(dataInizioSalvata);
     } else {
+      // prima volta: fisso la data al 1 marzo 2026 e la salvo
       dataInizioEffettiva = DateTime(2026, 3, 1);
       await prefs.setString('data_inizio', dataInizioEffettiva.toIso8601String());
     }
@@ -58,42 +64,56 @@ class _HomeState extends State<Home> {
       dataInizio = dataInizioEffettiva;
     });
 
+    // Passo questi numeri anche al Provider condiviso,
+    // così la Settings Screen può mostrarli
     context.read<UserProvider>().updateProgress(giorno, streak);
   }
 
+  // Salva streak e giorno in memoria permanente
   Future<void> _salvaDati() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('streak', streak);
     await prefs.setInt('giorno', giorno);
   }
 
+  // Percentuale di completamento dell'obiettivo (da 0.0 a 1.0)
+  // min() evita che superi il 100% se lo streak va oltre l'obiettivo
   double get percentuale => min(streak / obiettivoGiorni, 1.0);
 
+  // Cambia quale tab è aperto (Home / Stats / Impostazioni)
   void _onItemTapped(int index) {
     setState(() {
       _indiceSelezionato = index;
     });
   }
 
+  // Chiamato quando si preme "VAI AL GIORNO SUCCESSIVO"
   Future<void> giornoSuccessivo() async {
     final prefs = await SharedPreferences.getInstance();
 
+    // Salvo le risposte di oggi, utili per lo storico nelle statistiche
     await prefs.setBool('alcol_giorno_$giorno', haBevuto ?? false);
     await prefs.setString('umore_giorno_$giorno', umore);
 
     setState(() {
+      // Lo streak sale solo se oggi NON ha bevuto.
+      // Se ha bevuto, non lo tocchiamo: resta com'era, non si azzera
       if (haBevuto == false) {
         streak++;
       }
-      giorno++;
-      haBevuto = null;
-      umore = '';
+      giorno++; // si passa comunque al giorno dopo
+      haBevuto = null; // resetto per il nuovo giorno
+      umore = ''; // resetto per il nuovo giorno
     });
-    await _salvaDati();
 
+    await _salvaDati(); // salvo i nuovi valori
+
+    // Aggiorno anche il Provider, così la Settings Screen
+    // vede subito i numeri nuovi
     context.read<UserProvider>().updateProgress(giorno, streak);
   }
 
+  // Prepara i dati da passare alla schermata Statistiche
   ({DateTime data, bool haBevutoOggi, String umoreOggi}) datiPerStatistiche() {
     final base = dataInizio ?? DateTime(2026, 3, 1);
     final dataSimulata = base.add(Duration(days: giorno - 1));
@@ -107,14 +127,18 @@ class _HomeState extends State<Home> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF9),
       body: SafeArea(
+        // IndexedStack mostra solo una schermata alla volta (Home/Stats/Impostazioni),
+        // ma le tiene tutte "pronte" in memoria, così cambiando tab non si perde nulla
         child: IndexedStack(
           index: _indiceSelezionato,
           children: [
+            // ---- SCHERMATA HOME ----
             SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Saluto iniziale
                   Text(
                     nomeUtente.isEmpty ? 'Ciao! 👋' : 'Ciao, $nomeUtente! 👋',
                     style: const TextStyle(
@@ -129,6 +153,8 @@ class _HomeState extends State<Home> {
                     style: const TextStyle(fontSize: 15, color: Colors.black54),
                   ),
                   const SizedBox(height: 20),
+
+                  // Card: domanda sull'alcol, con i due bottoni Sì/No
                   Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
@@ -156,6 +182,8 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // Card: scelta dell'umore, con le 5 emoji
                   Card(
                     elevation: 3,
                     shape: RoundedRectangleBorder(
@@ -194,8 +222,10 @@ class _HomeState extends State<Home> {
                     child: Padding(
                       padding: const EdgeInsets.all(18),
                       child: Row(
+                        // Centra verticalmente il cerchio e il testo, uno rispetto all'altro
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // Cerchio che si riempie in base alla percentuale
                           SizedBox(
                             width: 80,
                             height: 80,
@@ -210,6 +240,7 @@ class _HomeState extends State<Home> {
                                       const AlwaysStoppedAnimation<Color>(
                                           Color(0xFF0D9488)),
                                 ),
+                                // Percentuale scritta al centro del cerchio
                                 Text(
                                   '${(percentuale * 100).round()}%',
                                   style: const TextStyle(
@@ -222,6 +253,7 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           const SizedBox(width: 18),
+                          // Testo streak + obiettivo, centrato rispetto al cerchio
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,6 +291,8 @@ class _HomeState extends State<Home> {
                   ),
 
                   const SizedBox(height: 16),
+
+                  // Card: messaggio motivazionale, cambia in base alle risposte del giorno
                   Card(
                     elevation: 2,
                     color: const Color(0xFFCCFBF1),
@@ -283,6 +317,8 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // Bottone finale: attivo solo se ha risposto sia ad alcol che a umore
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -309,16 +345,22 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
+
+            // ---- SCHERMATA STATISTICHE ----
             StatisticsScreen(
               currentDate: infoStatistiche.data,
               currentDay: giorno,
               hasConsumedAlcoholToday: infoStatistiche.haBevutoOggi,
               currentMoodToday: infoStatistiche.umoreOggi,
             ),
+
+            // ---- SCHERMATA IMPOSTAZIONI ----
             const SettingsScreen(),
           ],
         ),
       ),
+
+      // Barra di navigazione in basso, con le 3 sezioni dell'app
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceSelezionato,
         onTap: _onItemTapped,
@@ -336,6 +378,8 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Bottone Sì/No per la domanda sull'alcol.
+  // Cambia colore quando viene selezionato: arancione per "Sì", verde per "No"
   Widget _bottoneRisposta(String testo, bool valore) {
     final bool selezionato = haBevuto == valore;
     final Color coloreAttivo =
@@ -355,6 +399,8 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Emoji cliccabile per scegliere l'umore.
+  // Si ingrandisce e cambia colore quando è selezionata
   Widget bottoneUmore(String emoji, String nome) {
     return GestureDetector(
       onTap: () {
@@ -384,6 +430,7 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Genera il messaggio motivazionale in base alle risposte del giorno
   String messaggioInsight() {
     if (haBevuto == null || umore == '') {
       return 'Completa il check-in per ricevere un feedback personalizzato.';
