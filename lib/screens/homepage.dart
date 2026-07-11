@@ -194,10 +194,8 @@ class _HomeState extends State<Home> {
                     child: Padding(
                       padding: const EdgeInsets.all(18),
                       child: Row(
-                        // Centra verticalmente cerchio e testo, uno rispetto all'altro
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Cerchio di progresso, leggermente più grande di prima
                           SizedBox(
                             width: 80,
                             height: 80,
@@ -224,8 +222,6 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           const SizedBox(width: 18),
-                          // Blocco di testo a destra, centrato verticalmente
-                          // rispetto all'altezza del cerchio
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,7 +339,7 @@ class _HomeState extends State<Home> {
   Widget _bottoneRisposta(String testo, bool valore) {
     final bool selezionato = haBevuto == valore;
     final Color coloreAttivo =
-        valore ? const Color(0xFFEF4444) : const Color(0xFF0D9488);
+        valore ? const Color(0xFFF97316) : const Color(0xFF0D9488);
 
     return ElevatedButton(
       onPressed: () => setState(() => haBevuto = valore),
