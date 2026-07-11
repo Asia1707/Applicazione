@@ -66,7 +66,6 @@ flutter:
 
   ## QUI PER AGGIUNGERE ALTRE IMMAGINI (METTERLE ANCHE NELLA CARTELLA ASSETS) POI NEL TERMINALE SCRIVI flutter pub get PER AGGIORNARE LE DIPENDENZE
   assets:
-    - assets/logo.png
     - assets/logo_nuovo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
