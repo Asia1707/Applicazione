@@ -118,15 +118,15 @@ class _HomeState extends State<Home> {
                   Text(
                     nomeUtente.isEmpty ? 'Ciao! 👋' : 'Ciao, $nomeUtente! 👋',
                     style: const TextStyle(
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
+                      color: Color(0xFF13898C),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Giorno $giorno del tuo percorso',
-                    style: const TextStyle(fontSize: 15, color: Colors.black54),
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
                   ),
                   const SizedBox(height: 20),
                   Card(

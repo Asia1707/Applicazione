@@ -351,7 +351,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 'Le tue statistiche',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: ral5018), // titolo principale
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               const Text(
                 'Scorri per esplorare i tuoi dati',
                 style: TextStyle(fontSize: 16, color: Colors.black),

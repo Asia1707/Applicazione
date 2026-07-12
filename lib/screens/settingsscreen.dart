@@ -302,8 +302,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: const Text(
           'Impostazioni',
           style: TextStyle(
-            color: Colors.black87,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: Color(0xFF13898C),
           ),
         ),
       ),
