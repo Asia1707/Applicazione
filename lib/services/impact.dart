@@ -18,7 +18,7 @@ class Impact {
   static String tokenEndpoint = 'gate/v1/token/';
   static String refreshEndpoint = 'gate/v1/refresh/';
 
-  // METODI DI AUTENTICAZIONE E RETE 
+  // METODI DI AUTENTICAZIONE E RETE
 
   // Verifica se il server è acceso e raggiungibile
   Future<bool> isImpactUp() async { 

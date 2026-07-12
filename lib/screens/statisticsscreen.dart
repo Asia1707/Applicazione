@@ -324,11 +324,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       scoreStatsText = "Il tuo Indice di Recupero oggi è $recoveryScore/100.";
 
       if (widget.hasConsumedAlcoholToday) {
-        scoreFeedbackText = "L'alcol ha alterato il tuo recupero: il tuo corpo sta usando energia extra per smaltire le tossine. È normale sentirsi un po' meno energici oggi; dai priorità al riposo e sii paziente con te stesso. Un solo giorno no non cancella i tuoi risultati, fa parte del gioco: l'importante è tornare in equilibrio da domani.";
+        scoreFeedbackText = "L'alcol ha alterato il tuo recupero: il tuo corpo sta usando energia extra per smaltire le tossine. È normale sentirsi un po' meno energici oggi; dai priorità al riposo e sii paziente con te stesso. Un solo giorno no non cancella i tuoi risultati, l'importante è tornare in equilibrio da domani.";
       } else {
-        if (recoveryScore >= 80) { // --- QUI PER CAMBIARE LA SOGLIA DI PUNTEGGIO "OTTIMO" ---
+        if (recoveryScore >= 80) { 
           scoreFeedbackText = "Hai raggiunto un equilibrio perfetto. Il tuo organismo è in piena forma e pronto ad affrontare qualsiasi sfida oggi. Continua così e sfrutta questa energia positiva!";
-        } else if (recoveryScore >= 50) { // --- QUI PER CAMBIARE LA SOGLIA DI PUNTEGGIO "BUONO" ---
+        } else if (recoveryScore >= 50) { 
           scoreFeedbackText = "Tutto sommato una buona giornata. Il tuo indice mostra che sei sulla buona strada, anche se qualche piccola tensione ha frenato la tua ricarica. Stasera prova a staccare la spina un po' prima del solito e dedicati a un momento di puro relax prima di dormire: il tuo corpo ti ringrazierà domani.";
         } else {
           scoreFeedbackText = "Sembri un po' sottotono oggi. Capita a tutti di avere giornate in cui il recupero è faticoso: prendila con calma, non stressarti e dai priorità assoluta al tuo relax.";

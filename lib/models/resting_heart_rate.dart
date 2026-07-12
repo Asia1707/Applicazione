@@ -1,5 +1,4 @@
 // MODELLO RHR (Resting Heart Rate)
-// Una classe è una sorta di stampo o modello che definisce come è fatto un singolo dato 
 
 class RHR {
   
