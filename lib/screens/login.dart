@@ -221,7 +221,7 @@ class _LoginState extends State<Login> {
                       ScaffoldMessenger.of(context) //snackbar
                         ..removeCurrentSnackBar() // tolgo eventuale snackbar precedente
                         ..showSnackBar(const SnackBar(
-                            backgroundColor: Colors.red, // Colore di sfondo 
+                            backgroundColor: Color(0xFFF97316), // Colore di sfondo 
                             behavior: SnackBarBehavior.floating, // "fluttuante" sullo schermo
                             margin: EdgeInsets.all(8), // Distanza dai bordi
                             duration: Duration(seconds: 2), // Il messaggio scompare dopo 2 secondi
