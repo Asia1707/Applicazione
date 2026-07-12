@@ -1,23 +1,25 @@
+// MODELLO SLEEP DATA
+
 class SleepData {
 
-  final String? dateOfSleep;          // ? se puuò essere anche null
-  final int? minutesAsleep;
-  final int? minutesAwake;
-  final int? minutesAfterWakeup;
-  final int? efficiency;
+  final String? dateOfSleep;        // ? indica che accetta anche il valore null
+  final int? minutesAsleep;         // Minuti totali di sonno effettivo
+  final int? minutesAwake;          // Minuti passati svegli durante la notte
+  final int? minutesAfterWakeup;    // Minuti passati a letto svegli prima di alzarsi
+  final int? efficiency;            // Percentuale di efficienza del sonno calcolata dallo smartwatch
   
-  SleepData({ //costruttore della classe
-    required this.dateOfSleep, //ho usato ?, accetta anche il null
+  SleepData({ // Costruttore della classe
+    required this.dateOfSleep, 
     required this.minutesAsleep,
     required this.minutesAwake,
     required this.minutesAfterWakeup,
     required this.efficiency,
   });
 
-
-  factory SleepData.fromJson(Map<String, dynamic> json) { //converto i dati grezzi (JSON) in un oggetto
+ 
+  factory SleepData.fromJson(Map<String, dynamic> json) {  // factory serve a tradurre i dati grezzi scaricati da internet (in formato JSON) in un oggetto Flutter leggibile
     return SleepData(
-      dateOfSleep: json['dateOfSleep'],
+      dateOfSleep: json['dateOfSleep'], 
       minutesAsleep: json['minutesAsleep'],
       minutesAwake: json['minutesAwake'],
       minutesAfterWakeup: json['minutesAfterWakeup'],
